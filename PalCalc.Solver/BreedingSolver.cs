@@ -134,6 +134,9 @@ namespace PalCalc.Solver
                 .Select(g => g.ToList())
                 .SelectMany<List<OwnedPalReference>, IPalReference>(g =>
                 {
+                    if (spec.PrioritizeHigherIVs || spec.PrioritizeHighestPotentialIVs)
+                        return g;
+
                     // only one pal in this group, cant turn into a composite, keep as-is
                     if (g.Count == 1) return g;
 
