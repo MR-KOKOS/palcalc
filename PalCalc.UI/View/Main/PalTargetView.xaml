@@ -373,8 +373,16 @@
                 </ContentControl.Style>
             </ContentControl>
 
-            <CheckBox IsChecked="{Binding CurrentPalSpecifier.PrioritizeHigherIVs, Mode=TwoWay}">
-                <TextBlock Text="{itl:LocalizedText Code=LC_PRIORITIZE_HIGHER_IVS}" TextWrapping="Wrap" />
+            <CheckBox
+                IsChecked="{Binding CurrentPalSpecifier.PrioritizeHigherIVs, Mode=TwoWay}"
+                ToolTip="{itl:LocalizedText Code=LC_PRIORITIZE_AVERAGE_IVS_TOOLTIP}">
+                <TextBlock Text="{itl:LocalizedText Code=LC_PRIORITIZE_AVERAGE_IVS}" TextWrapping="Wrap" />
+            </CheckBox>
+
+            <CheckBox
+                IsChecked="{Binding CurrentPalSpecifier.PrioritizeHighestPotentialIVs, Mode=TwoWay}"
+                ToolTip="{itl:LocalizedText Code=LC_PRIORITIZE_POTENTIAL_IVS_TOOLTIP}">
+                <TextBlock Text="{itl:LocalizedText Code=LC_PRIORITIZE_POTENTIAL_IVS}" TextWrapping="Wrap" />
             </CheckBox>
         </StackPanel>
     </GroupBox>

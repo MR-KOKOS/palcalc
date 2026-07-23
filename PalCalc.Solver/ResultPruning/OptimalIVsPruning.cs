@@ -10,7 +10,12 @@ namespace PalCalc.Solver.ResultPruning
     /// <param name="maxIvDifference">
     /// Given a pal with the highest IVs, other pals will only be kept if their IVs differ by at most this much.
     /// </param>
-    public class OptimalIVsPruning(CancellationToken token, int maxIvDifference) : IResultPruning(token)
+    public class OptimalIVsPruning(
+        CancellationToken token,
+        int maxIvDifference,
+        bool prioritizeAverage = false,
+        bool prioritizePotential = true
+    ) : IResultPruning(token)
     {
         static int ValueOf(IV_Value value, int fallback, Func<IV_Value, int> map) =>
             value == IV_Value.Random ? fallback : map(value);
@@ -50,11 +55,25 @@ namespace PalCalc.Solver.ResultPruning
             var bestValue = results.Max(TotalIVs);
             var threshold = bestValue - maxIvDifference * 3;
 
-            var selected = results.Where(p => TotalIVs(p.IVs) >= threshold);
-            if (maxIvDifference != 0) return selected;
+            if (maxIvDifference != 0)
+                return results.Where(p => TotalIVs(p.IVs) >= threshold);
 
-            var bestMinimum = selected.Max(p => p.IVs.TotalMin);
-            return selected.Where(p => p.IVs.TotalMin == bestMinimum);
+            var selected = new List<IPalReference>();
+            if (prioritizeAverage)
+            {
+                var bestAverage = results.Max(p => p.IVs.AverageScore);
+                var averageResults = results.Where(p => p.IVs.AverageScore == bestAverage);
+                var bestMinimum = averageResults.Max(p => p.IVs.TotalMin);
+                selected.AddRange(averageResults.Where(p => p.IVs.TotalMin == bestMinimum));
+            }
+            if (prioritizePotential)
+            {
+                var bestPotential = results.Max(p => p.IVs.TotalMax);
+                var potentialResults = results.Where(p => p.IVs.TotalMax == bestPotential);
+                var bestMinimum = potentialResults.Max(p => p.IVs.TotalMin);
+                selected.AddRange(potentialResults.Where(p => p.IVs.TotalMin == bestMinimum));
+            }
+            return selected.Distinct();
         }
     }
 }

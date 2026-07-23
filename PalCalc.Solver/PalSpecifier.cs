@@ -22,6 +22,7 @@ namespace PalCalc.Solver
         public int IV_Attack { get; set; }
         public int IV_Defense { get; set; }
         public bool PrioritizeHigherIVs { get; set; }
+        public bool PrioritizeHighestPotentialIVs { get; set; }
 
         public override string ToString() => $"{Pal.Name} with {RequiredPassives.PassiveSkillListToString()}";
 

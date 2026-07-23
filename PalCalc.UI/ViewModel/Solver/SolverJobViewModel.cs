@@ -206,8 +206,8 @@ namespace PalCalc.UI.ViewModel.Solver
                     p => p.AllReferences().Select(r => r.Location.GetType()).Distinct().SetHash()
                 ));
                 resultsTable.AddRange(results);
-                var pruningBuilder = spec.PrioritizeHigherIVs
-                    ? PruningRulesBuilder.Default.PrioritizeHigherIVs()
+                var pruningBuilder = spec.PrioritizeHigherIVs || spec.PrioritizeHighestPotentialIVs
+                    ? PruningRulesBuilder.Default.PrioritizeIVs(spec.PrioritizeHigherIVs, spec.PrioritizeHighestPotentialIVs)
                     : PruningRulesBuilder.Default;
                 resultsTable.FilterAll(pruningBuilder, tokenSource.Token);
 

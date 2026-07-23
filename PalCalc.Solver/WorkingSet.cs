@@ -67,7 +67,8 @@ namespace PalCalc.Solver
 
         public bool IsOptimal(IPalReference p)
         {
-            var match = content[p]?.FirstOrDefault();
+            var matches = content[p];
+            var match = matches?.FirstOrDefault();
             if (match == null) return true;
 
             switch (p.BreedingEffort.CompareTo(match.BreedingEffort))
@@ -77,13 +78,12 @@ namespace PalCalc.Solver
                 case 1: return false;
             }
 
-            if (target.PrioritizeHigherIVs)
+            if (target.PrioritizeHigherIVs || target.PrioritizeHighestPotentialIVs)
             {
-                switch (p.IVs.CompareQualityTo(match.IVs))
-                {
-                    case 1: return true;
-                    case -1: return false;
-                }
+                var matchesPreference =
+                    target.PrioritizeHigherIVs && p.IVs.AverageScore >= matches.Max(m => m.IVs.AverageScore) ||
+                    target.PrioritizeHighestPotentialIVs && p.IVs.TotalMax >= matches.Max(m => m.IVs.TotalMax);
+                if (!matchesPreference) return false;
             }
 
             switch (p.TotalCost.CompareTo(match.TotalCost))
@@ -92,7 +92,8 @@ namespace PalCalc.Solver
                 case 1: return false;
             }
 
-            return p.IVs.CompareQualityTo(match.IVs) > 0;
+            return target.PrioritizeHigherIVs || target.PrioritizeHighestPotentialIVs ||
+                p.IVs.CompareQualityTo(match.IVs) > 0;
         }
 
         /// <summary>

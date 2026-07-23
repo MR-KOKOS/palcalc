@@ -468,21 +468,27 @@ namespace PalCalc.Solver
                             {
                                 var resultId = WorkingSet.DefaultGroupFn(res);
 
-                                bool updated = workingOptimalResults.TryAdd(resultId, efficiency);
-                                while (!updated)
+                                bool TryUpdateMetric(int key, Func<IV_Set, int> ivScore)
                                 {
-                                    var v = workingOptimalResults[resultId];
+                                    var updatedMetric = workingOptimalResults.TryAdd(key, efficiency);
+                                    while (!updatedMetric)
+                                    {
+                                        var v = workingOptimalResults[key];
+                                        if (v.Effort < effort ||
+                                            v.Effort == effort && ivScore(v.IVs) > ivScore(res.IVs) ||
+                                            v.Effort == effort && ivScore(v.IVs) == ivScore(res.IVs) && v.GoldCost < cost)
+                                            break;
 
-                                    if (v.Effort < effort) break;
-                                    if (v.Effort == effort &&
-                                        state.Spec.PrioritizeHigherIVs &&
-                                        v.IVs.CompareQualityTo(res.IVs) > 0) break;
-                                    if (v.Effort == effort &&
-                                        (!state.Spec.PrioritizeHigherIVs || v.IVs.CompareQualityTo(res.IVs) == 0) &&
-                                        v.GoldCost < cost) break;
-
-                                    updated = workingOptimalResults.TryUpdate(resultId, efficiency, v);
+                                        updatedMetric = workingOptimalResults.TryUpdate(key, efficiency, v);
+                                    }
+                                    return updatedMetric;
                                 }
+
+                                var prioritizeIVs = state.Spec.PrioritizeHigherIVs || state.Spec.PrioritizeHighestPotentialIVs;
+                                var updated =
+                                    (!prioritizeIVs && TryUpdateMetric(resultId, _ => 0)) |
+                                    (state.Spec.PrioritizeHigherIVs && TryUpdateMetric(HashCode.Combine(resultId, 1), ivs => ivs.AverageScore)) |
+                                    (state.Spec.PrioritizeHighestPotentialIVs && TryUpdateMetric(HashCode.Combine(resultId, 2), ivs => ivs.TotalMax));
 
                                 if (updated && res.BreedingEffort <= settings.MaxEffort)
                                 {

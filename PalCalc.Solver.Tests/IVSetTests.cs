@@ -4,18 +4,21 @@ namespace PalCalc.Solver.Tests
     public class IVSetTests
     {
         [TestMethod]
-        public void CompareQuality_PrefersHighestAverageThenHighestMinimum()
+        public void CompareIVs_DistinguishesAverageFromPotential()
         {
-            var lowerAverage = new IV_Set(
-                new IV_Value(false, 90, 90),
-                new IV_Value(false, 90, 90),
-                new IV_Value(false, 90, 90)
+            var consistent = new IV_Set(
+                new IV_Value(false, 63, 73),
+                new IV_Value(false, 88, 89),
+                new IV_Value(false, 98, 99)
             );
-            var higherAverage = lowerAverage with { Defense = new IV_Value(false, 100, 100) };
-            var widerRange = higherAverage with { Defense = new IV_Value(false, 90, 100) };
+            var highPotential = new IV_Set(
+                new IV_Value(false, 30, 98),
+                new IV_Value(false, 31, 97),
+                new IV_Value(false, 31, 91)
+            );
 
-            Assert.IsTrue(higherAverage.CompareQualityTo(lowerAverage) > 0);
-            Assert.IsTrue(higherAverage.CompareQualityTo(widerRange) > 0);
+            Assert.IsTrue(consistent.CompareAverageTo(highPotential) > 0);
+            Assert.IsTrue(highPotential.ComparePotentialTo(consistent) > 0);
         }
     }
 }

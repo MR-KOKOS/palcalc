@@ -62,7 +62,9 @@ namespace PalCalc.Solver
 
             // (needed for the last step where we try to combine two pals into one (`CompositePalReference`) if they are
             // different genders but otherwise have all the same properties)
-            var allExceptGenderGroupFn = PalProperty.Combine(PalProperty.Pal, PalProperty.RelevantPassives, PalProperty.IvRelevance);
+            var allExceptGenderGroupFn = spec.PrioritizeHigherIVs || spec.PrioritizeHighestPotentialIVs
+                ? PalProperty.Combine(PalProperty.Pal, PalProperty.RelevantPassives, PalProperty.IvRelevance, PalProperty.IvExact)
+                : PalProperty.Combine(PalProperty.Pal, PalProperty.RelevantPassives, PalProperty.IvRelevance);
 
             bool WithinBreedingSteps(Pal pal, int maxSteps) => breedingdb.MinBreedingSteps[pal][spec.Pal] <= maxSteps;
             static IV_Value MakeIV(int minValue, int value) =>
@@ -71,6 +73,14 @@ namespace PalCalc.Solver
                     Min: value,
                     Max: value
                 );
+            OwnedPalReference BestOwned(IEnumerable<OwnedPalReference> pals, Func<OwnedPalReference, int> score) =>
+                pals
+                    .OrderByDescending(score)
+                    .ThenByDescending(p => p.IVs.TotalMin)
+                    .ThenBy(p => p.ActualPassives.Count)
+                    .ThenBy(p => PreferredLocationPruning.LocationOrderingOf(p.UnderlyingInstance.Location.Type))
+                    .ThenByDescending(p => p.UnderlyingInstance.IV_HP + p.UnderlyingInstance.IV_Attack + p.UnderlyingInstance.IV_Defense)
+                    .First();
 
             var initialContent = settings.OwnedPals
                 // skip pals if they can't be used to reach the desired pals (e.g. Jetragon can only be bred from other Jetragons)
@@ -90,14 +100,18 @@ namespace PalCalc.Solver
                 ))
                 // group pals by their "important" properties and select the "best" pal from each group
                 .GroupBy(p => allPropertiesGroupFn(p))
-                .Select(g => g
-                    .OrderByDescending(p => spec.PrioritizeHigherIVs ? p.IVs.TotalMax : -p.ActualPassives.Count)
-                    .ThenByDescending(p => spec.PrioritizeHigherIVs ? p.IVs.TotalMin : 0)
-                    .ThenBy(p => p.ActualPassives.Count)
-                    .ThenBy(p => PreferredLocationPruning.LocationOrderingOf(p.UnderlyingInstance.Location.Type))
-                    .ThenByDescending(p => p.UnderlyingInstance.IV_HP + p.UnderlyingInstance.IV_Attack + p.UnderlyingInstance.IV_Defense)
-                    .First()
-                )
+                .SelectMany(g =>
+                {
+                    if (!spec.PrioritizeHigherIVs && !spec.PrioritizeHighestPotentialIVs)
+                        return [BestOwned(g, p => -p.ActualPassives.Count)];
+
+                    var selected = new List<OwnedPalReference>();
+                    if (spec.PrioritizeHigherIVs)
+                        selected.Add(BestOwned(g, p => p.IVs.AverageScore));
+                    if (spec.PrioritizeHighestPotentialIVs)
+                        selected.Add(BestOwned(g, p => p.IVs.TotalMax));
+                    return selected.Distinct();
+                })
                 // try to consolidate pals which are the same in every way that matters but are opposite genders
                 .GroupBy(p => allExceptGenderGroupFn(p))
                 .Select(g => g.ToList())
@@ -186,8 +200,8 @@ namespace PalCalc.Solver
             };
             SolverStateUpdated?.Invoke(statusMsg);
 
-            var pruningBuilder = spec.PrioritizeHigherIVs
-                ? settings.PruningBuilder.PrioritizeHigherIVs()
+            var pruningBuilder = spec.PrioritizeHigherIVs || spec.PrioritizeHighestPotentialIVs
+                ? settings.PruningBuilder.PrioritizeIVs(spec.PrioritizeHigherIVs, spec.PrioritizeHighestPotentialIVs)
                 : settings.PruningBuilder;
             var workingSet = new WorkingSet(spec, pruningBuilder, BuildInitialContent(spec), settings.MaxThreads, controller);
 

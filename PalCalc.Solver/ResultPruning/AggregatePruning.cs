@@ -19,4 +19,13 @@ namespace PalCalc.Solver.ResultPruning
         public override IEnumerable<IPalReference> Apply(IEnumerable<IPalReference> results, CachedResultData cachedData) =>
             contents.Aggregate(results, (r, p) => p.Apply(r, cachedData));
     }
+
+    public class UnionPruning(CancellationToken token, params IResultPruning[] contents) : IResultPruning(token)
+    {
+        public override IEnumerable<IPalReference> Apply(IEnumerable<IPalReference> results, CachedResultData cachedData)
+        {
+            var source = results.ToList();
+            return contents.SelectMany(p => p.Apply(source, cachedData)).Distinct();
+        }
+    }
 }

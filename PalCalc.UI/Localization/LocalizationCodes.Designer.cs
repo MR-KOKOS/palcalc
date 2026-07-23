@@ -651,7 +651,19 @@ namespace PalCalc.UI.Localization {
         /// <summary>
         ///   Looks up a localized string similar to .
         /// </summary>
-        LC_PRIORITIZE_HIGHER_IVS,
+        LC_PRIORITIZE_AVERAGE_IVS,
+        /// <summary>
+        ///   Looks up a localized string similar to .
+        /// </summary>
+        LC_PRIORITIZE_AVERAGE_IVS_TOOLTIP,
+        /// <summary>
+        ///   Looks up a localized string similar to .
+        /// </summary>
+        LC_PRIORITIZE_POTENTIAL_IVS,
+        /// <summary>
+        ///   Looks up a localized string similar to .
+        /// </summary>
+        LC_PRIORITIZE_POTENTIAL_IVS_TOOLTIP,
         /// <summary>
         ///   Looks up a localized string similar to AvgAttempts.
         /// </summary>
