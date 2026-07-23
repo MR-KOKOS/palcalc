@@ -485,10 +485,9 @@ namespace PalCalc.Solver
                                 }
 
                                 var prioritizeIVs = state.Spec.PrioritizeHigherIVs || state.Spec.PrioritizeHighestPotentialIVs;
-                                var updated =
-                                    (!prioritizeIVs && TryUpdateMetric(resultId, _ => 0)) |
-                                    (state.Spec.PrioritizeHigherIVs && TryUpdateMetric(HashCode.Combine(resultId, 1), ivs => ivs.AverageScore)) |
-                                    (state.Spec.PrioritizeHighestPotentialIVs && TryUpdateMetric(HashCode.Combine(resultId, 2), ivs => ivs.TotalMax));
+                                // IV candidates must be compared together by the deterministic pruning pass.
+                                // Filtering them here makes the result depend on which worker thread finishes first.
+                                var updated = prioritizeIVs || TryUpdateMetric(resultId, _ => 0);
 
                                 if (updated && res.BreedingEffort <= settings.MaxEffort)
                                 {
