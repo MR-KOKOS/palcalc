@@ -206,7 +206,10 @@ namespace PalCalc.UI.ViewModel.Solver
                     p => p.AllReferences().Select(r => r.Location.GetType()).Distinct().SetHash()
                 ));
                 resultsTable.AddRange(results);
-                resultsTable.FilterAll(PruningRulesBuilder.Default, tokenSource.Token);
+                var pruningBuilder = spec.PrioritizeHigherIVs
+                    ? PruningRulesBuilder.Default.PrioritizeHigherIVs()
+                    : PruningRulesBuilder.Default;
+                resultsTable.FilterAll(pruningBuilder, tokenSource.Token);
 
                 // final simplification pass, ignore any results which are over 2x the effort of the fastest option
                 resultsTable = resultsTable.BuildNew(PalProperty.Combine(

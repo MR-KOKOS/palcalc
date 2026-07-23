@@ -358,18 +358,24 @@
             </DataTemplate>
         </GroupBox.Resources>
 
-        <ContentControl DataContext="{Binding}" Content="{Binding}">
-            <ContentControl.Style>
-                <Style TargetType="ContentControl">
-                    <Setter Property="ContentTemplate" Value="{StaticResource IVThinTemplate}" />
+        <StackPanel vu:StackPanelExtensions.Spacing="5">
+            <ContentControl DataContext="{Binding}" Content="{Binding}">
+                <ContentControl.Style>
+                    <Style TargetType="ContentControl">
+                        <Setter Property="ContentTemplate" Value="{StaticResource IVThinTemplate}" />
 
-                    <Style.Triggers>
-                        <DataTrigger Binding="{Binding RelativeSource={RelativeSource Self}, Path=ActualWidth, Converter={StaticResource IVWideMode}}" Value="True">
-                            <Setter Property="ContentTemplate" Value="{StaticResource IVWideTemplate}" />
-                        </DataTrigger>
-                    </Style.Triggers>
-                </Style>
-            </ContentControl.Style>
-        </ContentControl>
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding RelativeSource={RelativeSource Self}, Path=ActualWidth, Converter={StaticResource IVWideMode}}" Value="True">
+                                <Setter Property="ContentTemplate" Value="{StaticResource IVWideTemplate}" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </ContentControl.Style>
+            </ContentControl>
+
+            <CheckBox IsChecked="{Binding CurrentPalSpecifier.PrioritizeHigherIVs, Mode=TwoWay}">
+                <TextBlock Text="{itl:LocalizedText Code=LC_PRIORITIZE_HIGHER_IVS}" TextWrapping="Wrap" />
+            </CheckBox>
+        </StackPanel>
     </GroupBox>
 </StackPanel>

@@ -50,7 +50,11 @@ namespace PalCalc.Solver.ResultPruning
             var bestValue = results.Max(TotalIVs);
             var threshold = bestValue - maxIvDifference * 3;
 
-            return results.Where(p => TotalIVs(p.IVs) >= threshold);
+            var selected = results.Where(p => TotalIVs(p.IVs) >= threshold);
+            if (maxIvDifference != 0) return selected;
+
+            var bestMinimum = selected.Max(p => p.IVs.TotalMin);
+            return selected.Where(p => p.IVs.TotalMin == bestMinimum);
         }
     }
 }

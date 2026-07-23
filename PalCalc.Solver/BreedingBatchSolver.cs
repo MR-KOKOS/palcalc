@@ -32,7 +32,8 @@ namespace PalCalc.Solver
 
     internal record struct BreedingSolverEfficiencyMetric(
         TimeSpan Effort,
-        int GoldCost
+        int GoldCost,
+        IV_Set IVs
     );
 
     /// <summary>
@@ -462,7 +463,7 @@ namespace PalCalc.Solver
                             var added = false;
                             var effort = res.BreedingEffort;
                             var cost = res.TotalCost;
-                            var efficiency = new BreedingSolverEfficiencyMetric(effort, cost);
+                            var efficiency = new BreedingSolverEfficiencyMetric(effort, cost, res.IVs);
                             if (effort <= settings.MaxEffort && (state.Spec.IsSatisfiedBy(res) || state.WorkingSet.IsOptimal(res)))
                             {
                                 var resultId = WorkingSet.DefaultGroupFn(res);
@@ -473,7 +474,12 @@ namespace PalCalc.Solver
                                     var v = workingOptimalResults[resultId];
 
                                     if (v.Effort < effort) break;
-                                    if (v.GoldCost < cost) break;
+                                    if (v.Effort == effort &&
+                                        state.Spec.PrioritizeHigherIVs &&
+                                        v.IVs.CompareQualityTo(res.IVs) > 0) break;
+                                    if (v.Effort == effort &&
+                                        (!state.Spec.PrioritizeHigherIVs || v.IVs.CompareQualityTo(res.IVs) == 0) &&
+                                        v.GoldCost < cost) break;
 
                                     updated = workingOptimalResults.TryUpdate(resultId, efficiency, v);
                                 }

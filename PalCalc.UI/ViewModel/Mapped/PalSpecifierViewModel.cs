@@ -46,6 +46,7 @@ namespace PalCalc.UI.ViewModel.Mapped
                 MinIv_HP = underlyingSpec.IV_HP;
                 MinIv_Attack = underlyingSpec.IV_Attack;
                 MinIv_Defense = underlyingSpec.IV_Defense;
+                PrioritizeHigherIVs = underlyingSpec.PrioritizeHigherIVs;
 
                 RequiredGender = PalGenderViewModel.Make(underlyingSpec.RequiredGender);
             }
@@ -80,6 +81,7 @@ namespace PalCalc.UI.ViewModel.Mapped
                 IV_HP = MinIv_HP,
                 IV_Attack = MinIv_Attack,
                 IV_Defense = MinIv_Defense,
+                PrioritizeHigherIVs = PrioritizeHigherIVs,
             }
             : null;
 
@@ -107,6 +109,9 @@ namespace PalCalc.UI.ViewModel.Mapped
         [NotifyPropertyChangedFor(nameof(Iv_Defense_IsValid))]
         [ObservableProperty]
         private int minIv_Defense;
+
+        [ObservableProperty]
+        private bool prioritizeHigherIVs;
 
         /* "Max IVs" are limits / hints for the user based on what was found in the save file */
 
@@ -200,6 +205,7 @@ namespace PalCalc.UI.ViewModel.Mapped
                 IV_HP = MinIv_HP,
                 IV_Attack = MinIv_Attack,
                 IV_Defense = MinIv_Defense,
+                PrioritizeHigherIVs = PrioritizeHigherIVs,
             }
         ) {
             CurrentResults = CurrentResults,

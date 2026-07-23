@@ -92,6 +92,8 @@ namespace PalCalc.Solver
                 .GroupBy(p => allPropertiesGroupFn(p))
                 .Select(g => g
                     .OrderBy(p => p.ActualPassives.Count)
+                    .ThenByDescending(p => spec.PrioritizeHigherIVs ? p.IVs.TotalMax : 0)
+                    .ThenByDescending(p => spec.PrioritizeHigherIVs ? p.IVs.TotalMin : 0)
                     .ThenBy(p => PreferredLocationPruning.LocationOrderingOf(p.UnderlyingInstance.Location.Type))
                     .ThenByDescending(p => p.UnderlyingInstance.IV_HP + p.UnderlyingInstance.IV_Attack + p.UnderlyingInstance.IV_Defense)
                     .First()
@@ -184,7 +186,10 @@ namespace PalCalc.Solver
             };
             SolverStateUpdated?.Invoke(statusMsg);
 
-            var workingSet = new WorkingSet(spec, settings.PruningBuilder, BuildInitialContent(spec), settings.MaxThreads, controller);
+            var pruningBuilder = spec.PrioritizeHigherIVs
+                ? settings.PruningBuilder.PrioritizeHigherIVs()
+                : settings.PruningBuilder;
+            var workingSet = new WorkingSet(spec, pruningBuilder, BuildInitialContent(spec), settings.MaxThreads, controller);
 
             // Apply main set of breeding passes
 

@@ -22,9 +22,16 @@ namespace PalCalc.Solver.ResultPruning
                 t => Build(t).Append(ruleBuilder(t))
             );
 
-        public static readonly PruningRulesBuilder Default = new PruningRulesBuilder(
-            token =>
-                new List<IResultPruning>()
+        public PruningRulesBuilder PrioritizeHigherIVs() =>
+            new PruningRulesBuilder(token =>
+            {
+                var rules = Build(token).Where(r => r is not OptimalIVsPruning).ToList();
+                rules.Insert(rules.FindIndex(r => r is MinimumEffortPruning) + 1, new OptimalIVsPruning(token, maxIvDifference: 0));
+                return rules;
+            });
+
+        public static readonly PruningRulesBuilder Default = new(
+            token => new List<IResultPruning>
                 {
                     new MinimumEffortPruning(token),
                     new MinimumBreedingStepsPruning(token),

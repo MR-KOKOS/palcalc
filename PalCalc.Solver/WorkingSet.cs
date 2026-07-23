@@ -67,9 +67,6 @@ namespace PalCalc.Solver
 
         public bool IsOptimal(IPalReference p)
         {
-            int TotalMaxValue(IV_Set ivs) => ivs.Attack.Max + ivs.Defense.Max + ivs.HP.Max;
-            int TotalMinValue(IV_Set ivs) => ivs.Attack.Min + ivs.Defense.Min + ivs.HP.Min;
-
             var match = content[p]?.FirstOrDefault();
             if (match == null) return true;
 
@@ -80,21 +77,22 @@ namespace PalCalc.Solver
                 case 1: return false;
             }
 
+            if (target.PrioritizeHigherIVs)
+            {
+                switch (p.IVs.CompareQualityTo(match.IVs))
+                {
+                    case 1: return true;
+                    case -1: return false;
+                }
+            }
+
             switch (p.TotalCost.CompareTo(match.TotalCost))
             {
-                // pick the one with lower cost
                 case -1: return true;
                 case 1: return false;
             }
 
-            switch (TotalMaxValue(p.IVs).CompareTo(TotalMaxValue(match.IVs)))
-            {
-                // pick the one with higher IVs
-                case 1: return true;
-                case -1: return false;
-                // same max IVs between the two, `p` is optimal if its avg IVs are higher
-                default: return TotalMinValue(p.IVs) > TotalMinValue(match.IVs);
-            }
+            return p.IVs.CompareQualityTo(match.IVs) > 0;
         }
 
         /// <summary>
