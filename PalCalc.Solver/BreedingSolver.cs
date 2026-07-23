@@ -105,11 +105,28 @@ namespace PalCalc.Solver
                     if (!spec.PrioritizeHigherIVs && !spec.PrioritizeHighestPotentialIVs)
                         return [BestOwned(g, p => -p.ActualPassives.Count)];
 
+                    var candidates = g.ToList();
                     var selected = new List<OwnedPalReference>();
                     if (spec.PrioritizeHigherIVs)
-                        selected.Add(BestOwned(g, p => p.IVs.AverageScore));
+                        selected.AddRange(candidates.Where(p =>
+                            !candidates.Any(other =>
+                                other != p &&
+                                !other.ActualPassives.Except(p.ActualPassives).Any() &&
+                                other.IVs.AverageScore >= p.IVs.AverageScore &&
+                                (other.ActualPassives.Count < p.ActualPassives.Count ||
+                                 other.IVs.AverageScore > p.IVs.AverageScore)
+                            )
+                        ));
                     if (spec.PrioritizeHighestPotentialIVs)
-                        selected.Add(BestOwned(g, p => p.IVs.TotalMax));
+                        selected.AddRange(candidates.Where(p =>
+                            !candidates.Any(other =>
+                                other != p &&
+                                !other.ActualPassives.Except(p.ActualPassives).Any() &&
+                                other.IVs.PotentiallyDominates(p.IVs) &&
+                                (other.ActualPassives.Count < p.ActualPassives.Count ||
+                                 other.IVs != p.IVs)
+                            )
+                        ));
                     return selected.Distinct();
                 })
                 // try to consolidate pals which are the same in every way that matters but are opposite genders

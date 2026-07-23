@@ -25,5 +25,10 @@ namespace PalCalc.Solver
         }
 
         public int CompareQualityTo(IV_Set other) => ComparePotentialTo(other);
+
+        public bool PotentiallyDominates(IV_Set other) =>
+            HP.Max >= other.HP.Max &&
+            Attack.Max >= other.Attack.Max &&
+            Defense.Max >= other.Defense.Max;
     }
 }
