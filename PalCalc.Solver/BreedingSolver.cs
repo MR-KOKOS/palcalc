@@ -91,9 +91,9 @@ namespace PalCalc.Solver
                 // group pals by their "important" properties and select the "best" pal from each group
                 .GroupBy(p => allPropertiesGroupFn(p))
                 .Select(g => g
-                    .OrderBy(p => p.ActualPassives.Count)
-                    .ThenByDescending(p => spec.PrioritizeHigherIVs ? p.IVs.TotalMax : 0)
+                    .OrderByDescending(p => spec.PrioritizeHigherIVs ? p.IVs.TotalMax : -p.ActualPassives.Count)
                     .ThenByDescending(p => spec.PrioritizeHigherIVs ? p.IVs.TotalMin : 0)
+                    .ThenBy(p => p.ActualPassives.Count)
                     .ThenBy(p => PreferredLocationPruning.LocationOrderingOf(p.UnderlyingInstance.Location.Type))
                     .ThenByDescending(p => p.UnderlyingInstance.IV_HP + p.UnderlyingInstance.IV_Attack + p.UnderlyingInstance.IV_Defense)
                     .First()
